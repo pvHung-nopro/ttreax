@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiệp Mời Khai Trương - TT Relax</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #FDFBF7;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, h4, .font-serif {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        /* Hiệu ứng hoa rơi */
+        .petal {
+            position: fixed;
+            top: -10%;
+            z-index: 0;
+            user-select: none;
+            pointer-events: none;
+            animation-name: fall;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+        
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg) translateX(0); opacity: 0; }
+            10% { opacity: 0.6; }
+            100% { transform: translateY(110vh) rotate(360deg) translateX(50px); opacity: 0; }
+        }
+
+        /* Animation Classes (Thay thế Framer Motion) */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .spin-slow {
+            animation: spin 4s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #92400e; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #78350f; }
+    </style>
+</head>
+<body class="text-gray-800 antialiased selection:bg-amber-200">
+
+    <!-- Audio Element (Hidden) -->
+    <audio id="bg-music" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/24/audio_3493e8e811.mp3?filename=relaxing-music-vol1-124477.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- === MÀN HÌNH CHỜ (PHONG BÌ) === -->
+    <div id="intro-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-amber-950 text-white p-4 text-center transition-opacity duration-700"
+         style="background-image: linear-gradient(rgba(66, 32, 6, 0.85), rgba(66, 32, 6, 0.9)), url('2545766608047995430.jpg'); background-size: cover; background-position: center;">
+        
+        <div class="border-2 border-amber-400/30 p-8 md:p-12 backdrop-blur-md rounded-lg max-w-md w-full relative shadow-2xl transform transition-all duration-700 scale-95 opacity-0" id="intro-card">
+            <!-- Decorative Corners -->
+            <div class="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-amber-200"></div>
+            <div class="absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 border-amber-200"></div>
+            <div class="absolute bottom-3 left-3 w-6 h-6 border-b-2 border-l-2 border-amber-200"></div>
+            <div class="absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2 border-amber-200"></div>
+
+            <div class="mb-8">
+                <p class="text-amber-200 tracking-[0.3em] text-xs uppercase mb-3">Lời mời trân trọng từ</p>
+                <h1 class="text-5xl font-serif font-bold text-white mb-2 drop-shadow-lg">TT Relax</h1>
+                <div class="w-16 h-1 bg-amber-400 mx-auto rounded-full"></div>
+            </div>
+            
+            <div class="my-10 flex justify-center">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-amber-400 blur-xl opacity-20 animate-pulse"></div>
+                    <div class="w-20 h-20 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full flex items-center justify-center shadow-lg text-amber-800 relative z-10">
+                        <i class="fas fa-gift text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <p class="mb-10 font-light text-amber-100 italic">"Gửi trao đến bạn sự thư thái và bình yên"</p>
+
+            <button onclick="openInvite()" class="group relative px-10 py-4 bg-gradient-to-r from-amber-300 to-amber-500 text-amber-950 font-bold rounded-full shadow-[0_0_20px_rgba(251,191,36,0.4)] hover:shadow-[0_0_30px_rgba(251,191,36,0.6)] transition-all hover:scale-105 active:scale-95 w-full overflow-hidden">
+                <span class="relative z-10 flex items-center justify-center gap-2 uppercase tracking-wider text-sm">
+                    Mở Thiệp Ngay <i class="fas fa-play text-xs"></i>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <!-- === MÀN HÌNH NỘI DUNG CHÍNH (Ẩn lúc đầu) === -->
+    <div id="main-content" class="hidden opacity-0 transition-opacity duration-1000 relative w-full max-w-lg mx-auto bg-white shadow-2xl min-h-screen pb-20 overflow-hidden">
+        
+        <!-- Music Control Button -->
+        <button onclick="toggleMusic()" id="music-btn" class="fixed top-4 right-4 z-50 p-3 bg-amber-800/80 backdrop-blur-md rounded-full text-white shadow-lg border border-amber-600 hover:scale-110 transition-transform spin-slow">
+            <i class="fas fa-music"></i>
+        </button>
+
+        <!-- Falling Petals Container -->
+        <div id="petals-container" class="absolute inset-0 pointer-events-none z-0 overflow-hidden h-full"></div>
+
+        <!-- HERO HEADER -->
+        <header class="relative h-[75vh] flex flex-col items-center justify-end pb-16 px-6 text-center text-white overflow-hidden">
+            <div class="absolute inset-0 z-0">
+                <img src="2545766608047995430.jpg" class="w-full h-full object-cover" alt="Spa Background">
+                <!-- <div class="absolute inset-0 bg-gradient-to-t from-amber-950 via-amber-900/20 to-transparent"></div> -->
+                <div class="absolute inset-0 bg-gradient-to-t from-amber-900 via-amber-900/20 to-transparent"></div>
+            </div>
+
+            <div class="relative z-10 reveal active">
+                <h2 class="text-sm md:text-base tracking-[0.2em] text-amber-300 uppercase mb-3">Grand Opening</h2>
+                <h1 class="text-5xl md:text-6xl font-serif font-bold mb-4 drop-shadow-md leading-tight">Lễ Khai Trương</h1>
+                <p class="text-lg text-amber-50 font-light max-w-xs mx-auto italic opacity-90">
+                    Chủ Nhật, ngày 22 tháng 10 năm 2025
+                </p>
+            </div>
+        </header>
+
+        <!-- BODY CONTENT -->
+        <div class="px-6 relative bg-[#FDFBF7]">
+            
+            <!-- INFO CARD -->
+            <div class="bg-white -mt-12 relative z-20 p-8 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] text-center border-b border-dashed border-amber-200 reveal">
+                <h3 class="text-2xl font-serif text-amber-800 font-bold mb-2">Trân Trọng Kính Mời</h3>
+                <p class="text-gray-500 mb-8 font-light">Đến tham dự buổi lễ ra mắt</p>
+                
+                <div class="space-y-6">
+                    <div class="flex items-start gap-4 text-left">
+                        <div class="p-3 bg-orange-50 text-amber-600 rounded-full shrink-0"><i class="far fa-calendar-alt text-xl"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Thời gian</h4>
+                            <p class="text-amber-700">09:00 - 21:00, Chủ Nhật, 22/10/2025</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start gap-4 text-left">
+                        <div class="p-3 bg-orange-50 text-amber-600 rounded-full shrink-0"><i class="fas fa-map-marker-alt text-xl"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Địa điểm</h4>
+                            <p class="text-amber-700">TT Relax, 123 Đường Nguyễn Trãi, Q. Thanh Xuân, Hà Nội</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIMELINE -->
+            <div class="py-12 reveal">
+                <div class="text-center mb-10">
+                    <span class="text-amber-500 uppercase text-xs font-bold tracking-widest">Agenda</span>
+                    <h3 class="font-serif text-3xl text-amber-900 mt-1">Lịch Trình Sự Kiện</h3>
+                </div>
+                
+                <div class="ml-4 pl-6 border-l-2 border-amber-200 space-y-10 relative">
+                    <!-- Item 1 -->
+                    <div class="relative reveal">
+                        <div class="absolute -left-[33px] top-0 w-4 h-4 bg-amber-500 rounded-full border-4 border-[#FDFBF7] ring-1 ring-amber-200"></div>
+                        <span class="inline-block px-2 py-1 bg-orange-100 text-amber-800 text-xs font-bold rounded mb-2">08:30</span>
+                        <h4 class="text-lg font-bold text-gray-800">Đón Khách & Tiệc Trà</h4>
+                        <p class="text-gray-500 text-sm mt-1">Thưởng thức trà thảo mộc & check-in không gian xanh.</p>
+                    </div>
+                    <!-- Item 2 -->
+                    <div class="relative reveal">
+                        <div class="absolute -left-[33px] top-0 w-4 h-4 bg-amber-500 rounded-full border-4 border-[#FDFBF7] ring-1 ring-amber-200"></div>
+                        <span class="inline-block px-2 py-1 bg-orange-100 text-amber-800 text-xs font-bold rounded mb-2">09:30</span>
+                        <h4 class="text-lg font-bold text-gray-800">Nghi Lễ Khai Trương</h4>
+                        <p class="text-gray-500 text-sm mt-1">Cắt băng khánh thành & giới thiệu dịch vụ.</p>
+                    </div>
+                    <!-- Item 3 -->
+                    <div class="relative reveal">
+                        <div class="absolute -left-[33px] top-0 w-4 h-4 bg-amber-500 rounded-full border-4 border-[#FDFBF7] ring-1 ring-amber-200"></div>
+                        <span class="inline-block px-2 py-1 bg-orange-100 text-amber-800 text-xs font-bold rounded mb-2">10:00</span>
+                        <h4 class="text-lg font-bold text-gray-800">Trải Nghiệm Dịch Vụ</h4>
+                        <p class="text-gray-500 text-sm mt-1">Tặng suất ngâm chân thảo dược & massage cổ vai gáy miễn phí.</p>
+                    </div>
+                     <!-- Item 4 -->
+                     <div class="relative reveal">
+                        <div class="absolute -left-[33px] top-0 w-4 h-4 bg-amber-500 rounded-full border-4 border-[#FDFBF7] ring-1 ring-amber-200"></div>
+                        <span class="inline-block px-2 py-1 bg-orange-100 text-amber-800 text-xs font-bold rounded mb-2">11:30</span>
+                        <h4 class="text-lg font-bold text-gray-800">Quà Tặng & Bế Mạc</h4>
+                        <p class="text-gray-500 text-sm mt-1">Nhận bộ quà tặng mỹ phẩm thiên nhiên trị giá 1.000.000đ.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GOOGLE MAP -->
+            <div class="mb-12 rounded-2xl overflow-hidden shadow-lg border-4 border-white reveal">
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.6293375734347!2d105.80669257609804!3d20.993466188497645!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ac96280436c3%3A0x770741270c538234!2zMTI5IE5ndXnhu4VuIFRyw6NpLCBUaMaw4bujbmcgxJDDrG5oLCBUaGFuaCBYdcOibiwgSMOgIE7huqlpLCBWaWV0bmFt!5e0!3m2!1sen!2s!4v1709191000000!5m2!1sen!2s" 
+                    width="100%" 
+                    height="300" 
+                    style="border:0;" 
+                    allowfullscreen="" 
+                    loading="lazy" 
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+
+            <!-- RSVP FORM -->
+            <div class="bg-white p-8 rounded-2xl shadow-xl border border-amber-50 mb-12 reveal" id="rsvp-section">
+                <div class="text-center mb-6">
+                    <!-- <i class="fas fa-star text-amber-400 text-2xl mb-3"></i> -->
+                    <h3 class="text-2xl font-serif font-bold text-amber-900">Xác Nhận Tham Dự</h3>
+                    <p class="text-gray-500 text-sm mt-2">Vui lòng đăng ký trước để chúng tôi chuẩn bị quà tặng chu đáo nhất.</p>
+                </div>
+                
+                <form id="rsvp-form" onsubmit="submitForm(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-amber-800 mb-1">Họ và tên</label>
+                        <input required type="text" class="w-full px-4 py-3 rounded-lg border border-amber-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white/80 backdrop-blur-sm outline-none transition" placeholder="Nhập tên của bạn...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-amber-800 mb-1">Số điện thoại</label>
+                        <input required type="tel" class="w-full px-4 py-3 rounded-lg border border-amber-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white/80 backdrop-blur-sm outline-none transition" placeholder="09xxxxxxx">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-amber-800 mb-1">Số lượng người</label>
+                        <select class="w-full px-4 py-3 rounded-lg border border-amber-200 focus:ring-2 focus:ring-amber-500 bg-white/80 backdrop-blur-sm outline-none">
+                            <option>1 người</option>
+                            <option>2 người</option>
+                            <option>Đi cùng gia đình</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full py-4 bg-gradient-to-r from-amber-700 to-orange-600 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-paper-plane"></i> Xác nhận tham dự
+                    </button>
+                </form>
+
+                <!-- Thank you message (hidden initially) -->
+                <div id="thank-you-msg" class="hidden bg-orange-50 p-8 rounded-xl text-center border border-amber-200 shadow-inner animate-fade-in">
+                    <div class="text-4xl mb-4">🙏</div>
+                    <h3 class="text-2xl font-serif text-amber-800 font-bold mb-2">Cảm ơn quý khách!</h3>
+                    <p class="text-gray-600">Chúng tôi rất mong được đón tiếp bạn tại buổi lễ.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="bg-amber-950 text-amber-100 py-12 text-center relative overflow-hidden mt-auto">
+            <div class="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none flex items-center justify-center">
+                <i class="fas fa-spa text-[15rem]"></i>
+            </div>
+            <div class="relative z-10 px-6">
+                <h2 class="text-3xl font-serif font-bold text-white mb-2">TT Relax</h2>
+                <p class="mb-8 opacity-80 text-sm italic">"Nơi cân bằng Thân - Tâm - Trí"</p>
+                
+                <div class="flex justify-center gap-6 mb-8">
+                    <div class="flex flex-col items-center gap-2">
+                        <div class="p-3 bg-white/10 rounded-full"><i class="fas fa-phone-alt"></i></div>
+                        <span class="text-xs">Hotline</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2">
+                        <div class="p-3 bg-white/10 rounded-full"><i class="fas fa-map-marker-alt"></i></div>
+                        <span class="text-xs">Chỉ đường</span>
+                    </div>
+                </div>
+                
+                <div class="border-t border-amber-800 pt-6 mt-6">
+                    <p class="text-xs opacity-50">© 2025 Sen Moc Spa. Trân trọng kính mời.</p>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Floating Call Button -->
+        <a href="tel:0912345678" class="fixed bottom-6 left-6 z-40 bg-amber-400 text-amber-950 px-5 py-3 rounded-full shadow-lg shadow-amber-400/30 font-bold flex items-center gap-2 hover:-translate-y-1 transition-transform">
+            <i class="fas fa-phone"></i> Gọi Ngay
+        </a>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- 1. Animation Show Intro ---
+        window.addEventListener('load', () => {
+            const introCard = document.getElementById('intro-card');
+            setTimeout(() => {
+                introCard.classList.remove('opacity-0', 'scale-95');
+            }, 100);
+        });
+
+        // --- 2. Handle Open Invite ---
+        const introScreen = document.getElementById('intro-screen');
+        const mainContent = document.getElementById('main-content');
+        const audio = document.getElementById('bg-music');
+        let isPlaying = false;
+
+        function openInvite() {
+            // Hiệu ứng fade out màn hình chờ
+            introScreen.style.opacity = '0';
+            
+            // Phát nhạc (Workaround policy browser)
+            audio.volume = 0.5;
+            audio.play().then(() => {
+                isPlaying = true;
+            }).catch(err => console.log('Audio autoplay blocked', err));
+
+            setTimeout(() => {
+                introScreen.style.display = 'none';
+                mainContent.classList.remove('hidden');
+                
+                // Trigger reflow để animation hoạt động
+                void mainContent.offsetWidth; 
+                mainContent.style.opacity = '1';
+                
+                // Khởi tạo hiệu ứng hoa rơi
+                initPetals();
+            }, 700);
+        }
+
+        // --- 3. Music Toggle ---
+        function toggleMusic() {
+            const btnIcon = document.querySelector('#music-btn i');
+            const btn = document.getElementById('music-btn');
+
+            if (isPlaying) {
+                audio.pause();
+                btnIcon.classList.remove('fa-music');
+                btnIcon.classList.add('fa-pause');
+                btn.classList.remove('spin-slow'); // Dừng xoay khi tắt nhạc
+                isPlaying = false;
+            } else {
+                audio.play();
+                btnIcon.classList.remove('fa-pause');
+                btnIcon.classList.add('fa-music');
+                btn.classList.add('spin-slow'); // Xoay khi bật nhạc
+                isPlaying = true;
+            }
+        }
+
+        // --- 4. Falling Petals Effect ---
+        const petals = ["🌸", "✨", "🍃", "💮"];
+        
+        function initPetals() {
+            const container = document.getElementById('petals-container');
+            
+            // Tạo 15 cánh hoa
+            for (let i = 0; i < 15; i++) {
+                createPetal(container);
+            }
+        }
+
+        function createPetal(container) {
+            const el = document.createElement('div');
+            el.classList.add('petal');
+            el.innerText = petals[Math.floor(Math.random() * petals.length)];
+            
+            // Random properties
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.fontSize = (Math.random() * 20 + 10) + 'px';
+            el.style.animationDuration = (Math.random() * 5 + 10) + 's';
+            el.style.animationDelay = (Math.random() * 5) + 's';
+            
+            container.appendChild(el);
+        }
+
+        // --- 5. Scroll Reveal Animation (Intersection Observer) ---
+        const observerOptions = {
+            threshold: 0.15,
+            rootMargin: "0px 0px -50px 0px"
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target); // Chỉ chạy 1 lần
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => {
+            observer.observe(el);
+        });
+
+        // --- 6. Form Handling ---
+        function submitForm(e) {
+            e.preventDefault();
+            const form = document.getElementById('rsvp-form');
+            const thankYou = document.getElementById('thank-you-msg');
+            
+            // Giả lập gửi form
+            const btn = form.querySelector('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                form.style.display = 'none';
+                thankYou.classList.remove('hidden');
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
